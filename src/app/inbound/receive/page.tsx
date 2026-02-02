@@ -163,7 +163,7 @@ export default function ReceivePage(): React.JSX.Element {
                     {/* Header */}
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                         <div>
-                            <h1 className="text-2xl font-bold text-slate-800">Receiving</h1>
+                            <h1 className="text-3xl font-bold text-slate-900">Receiving</h1>
                             <p className="text-slate-600 mt-1">
                                 Receive inbound shipments and scan items
                             </p>
@@ -172,37 +172,37 @@ export default function ReceivePage(): React.JSX.Element {
 
                     {/* Stats */}
                     <div className="grid grid-cols-3 gap-4 mb-8">
-                        <Card variant="elevated" className="bg-white border border-amber-200">
+                        <Card variant="elevated" className="bg-white border border-slate-200 shadow-sm">
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center">
+                                <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
                                     <Clock className="w-5 h-5 text-amber-600" />
                                 </div>
                                 <div>
-                                    <div className="text-2xl font-bold text-amber-700">{stats.scheduled}</div>
+                                    <div className="text-2xl font-bold text-slate-900">{stats.scheduled}</div>
                                     <div className="text-sm text-slate-600">Scheduled</div>
                                 </div>
                             </div>
                         </Card>
 
-                        <Card variant="elevated" className="bg-white border border-blue-200">
+                        <Card variant="elevated" className="bg-white border border-slate-200 shadow-sm">
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center">
+                                <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
                                     <Package className="w-5 h-5 text-blue-600" />
                                 </div>
                                 <div>
-                                    <div className="text-2xl font-bold text-blue-700">{stats.receiving}</div>
+                                    <div className="text-2xl font-bold text-slate-900">{stats.receiving}</div>
                                     <div className="text-sm text-slate-600">Receiving</div>
                                 </div>
                             </div>
                         </Card>
 
-                        <Card variant="elevated" className="bg-white border border-emerald-200">
+                        <Card variant="elevated" className="bg-white border border-slate-200 shadow-sm">
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center">
+                                <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center">
                                     <CheckCircle className="w-5 h-5 text-emerald-600" />
                                 </div>
                                 <div>
-                                    <div className="text-2xl font-bold text-emerald-700">{stats.received}</div>
+                                    <div className="text-2xl font-bold text-slate-900">{stats.received}</div>
                                     <div className="text-sm text-slate-600">Received</div>
                                 </div>
                             </div>
@@ -211,9 +211,9 @@ export default function ReceivePage(): React.JSX.Element {
 
                     {/* Receiving Mode */}
                     {scanMode && receivingShipment && (
-                        <Card variant="elevated" className="mb-8 bg-white border border-blue-200">
+                        <Card variant="elevated" className="mb-8 bg-white border border-slate-200 shadow-sm">
                             <div className="py-8">
-                                <h3 className="text-xl font-bold text-slate-800 text-center mb-4">
+                                <h3 className="text-xl font-bold text-slate-900 text-center mb-4">
                                     Receiving {receivingShipment.asn_number}
                                 </h3>
 
@@ -226,16 +226,16 @@ export default function ReceivePage(): React.JSX.Element {
                                                 const isComplete = line.status === 'received';
 
                                                 return (
-                                                    <div key={line.id} className="flex items-center justify-between bg-white p-3 rounded-lg">
+                                                    <div key={line.id} className="flex items-center justify-between bg-white p-3 rounded-lg border border-slate-200">
                                                         <div className="flex-1">
-                                                            <p className="font-medium text-slate-800">{line.product.name}</p>
-                                                            <p className="text-sm text-slate-500">SKU: {line.product.sku}</p>
+                                                            <p className="font-medium text-slate-900">{line.product.name}</p>
+                                                            <p className="text-sm text-slate-600">SKU: {line.product.sku}</p>
                                                         </div>
                                                         <div className="flex items-center gap-4">
                                                             <div className="text-right">
                                                                 <p className={cn(
                                                                     "text-lg font-bold",
-                                                                    isComplete ? "text-emerald-600" : "text-slate-800"
+                                                                    isComplete ? "text-emerald-600" : "text-slate-900"
                                                                 )}>
                                                                     {line.received_quantity} / {line.expected_quantity}
                                                                 </p>
@@ -296,7 +296,7 @@ export default function ReceivePage(): React.JSX.Element {
                     )}
 
                     {/* Shipments List */}
-                    <Card variant="elevated" padded={false} className="bg-white border border-slate-200">
+                    <Card variant="elevated" padded={false} className="bg-white border border-slate-200 shadow-sm">
                         <div className="p-6 border-b border-slate-200">
                             <CardHeader
                                 title="Inbound Shipments"
@@ -312,8 +312,8 @@ export default function ReceivePage(): React.JSX.Element {
                         ) : shipments.length === 0 ? (
                             <div className="p-12 text-center">
                                 <PackageCheck className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                                <h3 className="text-lg font-semibold text-slate-700 mb-2">No inbound shipments</h3>
-                                <p className="text-slate-500">All shipments have been received</p>
+                                <h3 className="text-lg font-semibold text-slate-900 mb-2">No inbound shipments</h3>
+                                <p className="text-slate-600">All shipments have been received</p>
                             </div>
                         ) : (
                             <div className="divide-y divide-slate-200">
@@ -344,13 +344,13 @@ export default function ReceivePage(): React.JSX.Element {
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex items-start justify-between gap-4 mb-2">
                                                         <div>
-                                                            <h3 className="font-mono font-bold text-lg text-slate-800 mb-1">
+                                                            <h3 className="font-mono font-bold text-lg text-slate-900 mb-1">
                                                                 {shipment.asn_number}
                                                             </h3>
                                                             <p className="text-sm text-slate-600">
                                                                 Supplier: {shipment.supplier_name}
                                                             </p>
-                                                            <div className="flex items-center gap-4 text-sm text-slate-500 mt-1">
+                                                            <div className="flex items-center gap-4 text-sm text-slate-600 mt-1">
                                                                 <span>Expected: {new Date(shipment.expected_date).toLocaleDateString()}</span>
                                                                 {shipment.carrier && (
                                                                     <span className="flex items-center gap-1">

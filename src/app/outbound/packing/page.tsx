@@ -124,7 +124,7 @@ export default function PackingPage(): React.JSX.Element {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50">
+        <div className="min-h-screen bg-white">
             <Sidebar />
 
             <main className="main-content">
@@ -132,7 +132,7 @@ export default function PackingPage(): React.JSX.Element {
                     {/* Header */}
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                         <div>
-                            <h1 className="text-2xl font-bold text-slate-800">Packing</h1>
+                            <h1 className="text-2xl font-bold text-slate-900">Packing</h1>
                             <p className="text-slate-600 mt-1">
                                 Pack shipments and generate shipping labels
                             </p>
@@ -141,7 +141,7 @@ export default function PackingPage(): React.JSX.Element {
 
                     {/* Stats */}
                     <div className="grid grid-cols-2 gap-4 mb-8">
-                        <Card variant="elevated" className="bg-white border border-blue-200">
+                        <Card variant="elevated" className="bg-white border border-slate-200 shadow-sm">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center">
                                     <Box className="w-5 h-5 text-blue-600" />
@@ -153,7 +153,7 @@ export default function PackingPage(): React.JSX.Element {
                             </div>
                         </Card>
 
-                        <Card variant="elevated" className="bg-white border border-emerald-200">
+                        <Card variant="elevated" className="bg-white border border-slate-200 shadow-sm">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center">
                                     <CheckCircle className="w-5 h-5 text-emerald-600" />
@@ -168,26 +168,26 @@ export default function PackingPage(): React.JSX.Element {
 
                     {/* Packing Workflow */}
                     {scanMode && selectedShipment && (
-                        <Card variant="elevated" className="mb-8 bg-white border border-blue-200">
+                        <Card variant="elevated" className="mb-8 bg-white border border-slate-200 shadow-sm">
                             <div className="text-center py-8">
-                                <h3 className="text-xl font-bold text-slate-800 mb-4">
+                                <h3 className="text-xl font-bold text-slate-900 mb-4">
                                     Packing {selectedShipment.order_number}
                                 </h3>
 
                                 {/* Items to Pack */}
                                 <div className="max-w-2xl mx-auto mb-6">
                                     <div className="bg-slate-50 rounded-lg p-4">
-                                        <h4 className="font-semibold text-slate-800 mb-3">Items in this shipment:</h4>
+                                        <h4 className="font-semibold text-slate-900 mb-3">Items in this shipment:</h4>
                                         <div className="space-y-2">
                                             {selectedShipment.shipment_lines.map((line) => (
-                                                <div key={line.id} className="flex items-center justify-between bg-white p-3 rounded-lg">
+                                                <div key={line.id} className="flex items-center justify-between bg-white p-3 rounded-lg border border-slate-200">
                                                     <div className="text-left">
-                                                        <p className="font-medium text-slate-800">{line.product.name}</p>
-                                                        <p className="text-sm text-slate-500">SKU: {line.product.sku}</p>
+                                                        <p className="font-medium text-slate-900">{line.product.name}</p>
+                                                        <p className="text-sm text-slate-600">SKU: {line.product.sku}</p>
                                                     </div>
                                                     <div className="text-right">
-                                                        <p className="text-lg font-bold text-slate-800">{line.quantity}</p>
-                                                        <p className="text-xs text-slate-500">units</p>
+                                                        <p className="text-lg font-bold text-slate-900">{line.quantity}</p>
+                                                        <p className="text-xs text-slate-600">units</p>
                                                     </div>
                                                 </div>
                                             ))}
@@ -209,11 +209,11 @@ export default function PackingPage(): React.JSX.Element {
                                                     className={cn(
                                                         'p-4 rounded-lg border-2 transition-all text-center font-semibold',
                                                         selectedCarrier === carrier.value
-                                                            ? 'border-blue-500 bg-blue-50'
+                                                            ? 'border-emerald-500 bg-emerald-50'
                                                             : 'border-slate-200 hover:border-slate-300 bg-white'
                                                     )}
                                                 >
-                                                    <span className={selectedCarrier === carrier.value ? 'text-blue-700' : carrier.color}>
+                                                    <span className={selectedCarrier === carrier.value ? 'text-emerald-700' : carrier.color}>
                                                         {carrier.label}
                                                     </span>
                                                 </button>
@@ -248,7 +248,7 @@ export default function PackingPage(): React.JSX.Element {
                     )}
 
                     {/* Shipments List */}
-                    <Card variant="elevated" padded={false} className="bg-white border border-slate-200">
+                    <Card variant="elevated" padded={false} className="bg-white border border-slate-200 shadow-sm">
                         <div className="p-6 border-b border-slate-200">
                             <CardHeader
                                 title="Ready to Pack"
@@ -264,8 +264,8 @@ export default function PackingPage(): React.JSX.Element {
                         ) : shipments.length === 0 ? (
                             <div className="p-12 text-center">
                                 <Package className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                                <h3 className="text-lg font-semibold text-slate-700 mb-2">No shipments ready</h3>
-                                <p className="text-slate-500">All shipments are picked or packed</p>
+                                <h3 className="text-lg font-semibold text-slate-900 mb-2">No shipments ready</h3>
+                                <p className="text-slate-600">All shipments are picked or packed</p>
                             </div>
                         ) : (
                             <div className="divide-y divide-slate-200">
@@ -285,7 +285,7 @@ export default function PackingPage(): React.JSX.Element {
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex items-start justify-between gap-4 mb-2">
                                                         <div>
-                                                            <h3 className="font-mono font-bold text-lg text-slate-800 mb-1">
+                                                            <h3 className="font-mono font-bold text-lg text-slate-900 mb-1">
                                                                 {shipment.order_number}
                                                             </h3>
                                                             <p className="text-sm text-slate-600">
@@ -293,16 +293,16 @@ export default function PackingPage(): React.JSX.Element {
                                                             </p>
                                                         </div>
                                                         <div className="text-right">
-                                                            <div className="text-2xl font-bold text-slate-800">
+                                                            <div className="text-2xl font-bold text-slate-900">
                                                                 {shipment.shipment_lines.length}
                                                             </div>
-                                                            <div className="text-xs text-slate-500">items</div>
+                                                            <div className="text-xs text-slate-600">items</div>
                                                         </div>
                                                     </div>
 
                                                     {/* Items Preview */}
                                                     <div className="mb-4">
-                                                        <div className="text-xs text-slate-500 mb-2">Items:</div>
+                                                        <div className="text-xs text-slate-600 mb-2">Items:</div>
                                                         <div className="flex flex-wrap gap-2">
                                                             {shipment.shipment_lines.slice(0, 3).map((line) => (
                                                                 <span key={line.id} className="px-2 py-1 bg-slate-100 rounded text-xs text-slate-700">
@@ -336,12 +336,12 @@ export default function PackingPage(): React.JSX.Element {
                     </Card>
 
                     {/* Info Card */}
-                    <Card variant="elevated" className="mt-8 bg-blue-50 border border-blue-200">
+                    <Card variant="elevated" className="mt-8 bg-emerald-50 border border-emerald-200">
                         <div className="flex items-start gap-3">
-                            <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                            <AlertCircle className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
                             <div>
-                                <h4 className="font-semibold text-blue-900 mb-1">Packing Tips</h4>
-                                <ul className="text-sm text-blue-800 space-y-1">
+                                <h4 className="font-semibold text-emerald-900 mb-1">Packing Tips</h4>
+                                <ul className="text-sm text-emerald-800 space-y-1">
                                     <li>• Verify all items before packing</li>
                                     <li>• Select appropriate carrier for destination</li>
                                     <li>• Print label and attach to package</li>

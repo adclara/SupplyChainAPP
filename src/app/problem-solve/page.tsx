@@ -177,7 +177,7 @@ export default function ProblemSolvePage(): React.JSX.Element {
                     {/* Header */}
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                         <div>
-                            <h1 className="text-2xl font-bold text-slate-800">Problem Solve</h1>
+                            <h1 className="text-2xl font-bold text-slate-900">Problem Solve</h1>
                             <p className="text-slate-600 mt-1">
                                 Manage and resolve warehouse problem tickets
                             </p>
@@ -281,7 +281,7 @@ export default function ProblemSolvePage(): React.JSX.Element {
                         <Card variant="elevated" className="mb-8 bg-white border border-emerald-200">
                             <div className="py-8 px-6">
                                 <div className="flex items-center justify-between mb-4">
-                                    <h3 className="text-xl font-bold text-slate-800">
+                                    <h3 className="text-xl font-bold text-slate-900">
                                         Resolve Ticket #{resolvingTicket.id.slice(0, 8)}
                                     </h3>
                                     <button
@@ -351,7 +351,7 @@ export default function ProblemSolvePage(): React.JSX.Element {
                         ) : displayTickets.length === 0 ? (
                             <div className="p-12 text-center">
                                 <CheckCircle className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                                <h3 className="text-lg font-semibold text-slate-700 mb-2">No tickets</h3>
+                                <h3 className="text-lg font-semibold text-slate-900 mb-2">No tickets</h3>
                                 <p className="text-slate-500">
                                     {activeTab === 'all'
                                         ? 'No problem tickets found'
@@ -412,7 +412,7 @@ export default function ProblemSolvePage(): React.JSX.Element {
                                                                     </span>
                                                                 )}
                                                             </div>
-                                                            <p className="text-sm font-medium text-slate-800 mt-2">
+                                                            <p className="text-sm font-medium text-slate-900 mt-2">
                                                                 {ticket.description}
                                                             </p>
                                                         </div>

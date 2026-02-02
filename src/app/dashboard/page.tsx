@@ -70,7 +70,7 @@ export default function DashboardPage(): React.JSX.Element {
                 <main className="main-content">
                     <div className="flex items-center justify-center h-screen">
                         <div className="text-center">
-                            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
+                            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
                             <p className="text-slate-600">Loading dashboard...</p>
                         </div>
                     </div>
@@ -87,7 +87,7 @@ export default function DashboardPage(): React.JSX.Element {
                 <div className="page-container animate-fade-in">
                     {/* Header */}
                     <div className="mb-8">
-                        <h1 className="text-2xl font-bold text-slate-800">Dashboard</h1>
+                        <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
                         <p className="text-slate-600 mt-1">
                             Welcome back, {user?.full_name || user?.email}
                         </p>
@@ -95,12 +95,12 @@ export default function DashboardPage(): React.JSX.Element {
 
                     {/* Problem Alerts */}
                     {(stats.problems.critical > 0 || stats.problems.open > 5) && (
-                        <Card variant="elevated" className="mb-8 bg-red-50 border border-red-200">
+                        <Card variant="elevated" className="mb-6 bg-red-50 border border-red-200 shadow-sm">
                             <div className="flex items-start gap-3">
                                 <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
                                 <div className="flex-1">
                                     <h4 className="font-semibold text-red-900 mb-1">Action Required</h4>
-                                    <p className="text-sm text-red-800">
+                                    <p className="text-sm text-red-700">
                                         {stats.problems.critical > 0 && `${stats.problems.critical} critical issues `}
                                         {stats.problems.critical > 0 && stats.problems.open > 5 && 'and '}
                                         {stats.problems.open > 5 && `${stats.problems.open} open tickets `}
@@ -120,22 +120,22 @@ export default function DashboardPage(): React.JSX.Element {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                         {/* Inbound */}
                         <Link href="/inbound/receive">
-                            <Card variant="elevated" className="bg-white border border-blue-200 hover:border-blue-300 transition-all hover:shadow-lg cursor-pointer">
-                                <div>
+                            <Card variant="elevated" className="bg-white border border-slate-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer h-full">
+                                <div className="p-1">
                                     <div className="flex items-center justify-between mb-4">
                                         <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center">
                                             <PackageOpen className="w-6 h-6 text-blue-600" />
                                         </div>
-                                        <ArrowRight className="w-5 h-5 text-blue-400" />
+                                        <ArrowRight className="w-5 h-5 text-slate-400" />
                                     </div>
                                     <h3 className="text-sm font-medium text-slate-600 mb-1">Inbound</h3>
                                     <div className="flex items-baseline gap-2 mb-2">
-                                        <div className="text-3xl font-bold text-slate-800">
+                                        <div className="text-3xl font-bold text-slate-900">
                                             {stats.inbound.receiving + stats.inbound.scheduled}
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-4 text-xs">
-                                        <span className="text-amber-700">
+                                        <span className="text-amber-600 font-medium">
                                             {stats.inbound.receiving} receiving
                                         </span>
                                         <span className="text-slate-500">
@@ -148,26 +148,26 @@ export default function DashboardPage(): React.JSX.Element {
 
                         {/* Outbound */}
                         <Link href="/outbound/waves">
-                            <Card variant="elevated" className="bg-white border border-purple-200 hover:border-purple-300 transition-all hover:shadow-lg cursor-pointer">
-                                <div>
+                            <Card variant="elevated" className="bg-white border border-slate-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer h-full">
+                                <div className="p-1">
                                     <div className="flex items-center justify-between mb-4">
                                         <div className="w-12 h-12 rounded-xl bg-purple-50 flex items-center justify-center">
                                             <Truck className="w-6 h-6 text-purple-600" />
                                         </div>
-                                        <ArrowRight className="w-5 h-5 text-purple-400" />
+                                        <ArrowRight className="w-5 h-5 text-slate-400" />
                                     </div>
                                     <h3 className="text-sm font-medium text-slate-600 mb-1">Outbound</h3>
                                     <div className="flex items-baseline gap-2 mb-2">
-                                        <div className="text-3xl font-bold text-slate-800">
+                                        <div className="text-3xl font-bold text-slate-900">
                                             {stats.outbound.waves_active}
                                         </div>
                                         <span className="text-sm text-slate-500">active waves</span>
                                     </div>
                                     <div className="flex items-center gap-4 text-xs">
-                                        <span className="text-blue-700">
+                                        <span className="text-blue-600 font-medium">
                                             {stats.outbound.picking_active} picking
                                         </span>
-                                        <span className="text-emerald-700">
+                                        <span className="text-emerald-600 font-medium">
                                             {stats.outbound.shipped_today} shipped
                                         </span>
                                     </div>
@@ -177,17 +177,17 @@ export default function DashboardPage(): React.JSX.Element {
 
                         {/* Inventory */}
                         <Link href="/inventory/icqa">
-                            <Card variant="elevated" className="bg-white border border-emerald-200 hover:border-emerald-300 transition-all hover:shadow-lg cursor-pointer">
-                                <div>
+                            <Card variant="elevated" className="bg-white border border-slate-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer h-full">
+                                <div className="p-1">
                                     <div className="flex items-center justify-between mb-4">
                                         <div className="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center">
                                             <Box className="w-6 h-6 text-emerald-600" />
                                         </div>
-                                        <ArrowRight className="w-5 h-5 text-emerald-400" />
+                                        <ArrowRight className="w-5 h-5 text-slate-400" />
                                     </div>
                                     <h3 className="text-sm font-medium text-slate-600 mb-1">Inventory</h3>
                                     <div className="flex items-baseline gap-2 mb-2">
-                                        <div className="text-3xl font-bold text-slate-800">
+                                        <div className="text-3xl font-bold text-slate-900">
                                             {stats.inventory.total_units.toLocaleString()}
                                         </div>
                                     </div>
@@ -206,12 +206,12 @@ export default function DashboardPage(): React.JSX.Element {
                         {/* Problems */}
                         <Link href="/problem-solve">
                             <Card variant="elevated" className={cn(
-                                "bg-white border transition-all hover:shadow-lg cursor-pointer",
+                                "bg-white border shadow-sm hover:shadow-md transition-shadow cursor-pointer h-full",
                                 stats.problems.critical > 0
-                                    ? "border-red-200 hover:border-red-300"
-                                    : "border-amber-200 hover:border-amber-300"
+                                    ? "border-red-200"
+                                    : "border-slate-200"
                             )}>
-                                <div>
+                                <div className="p-1">
                                     <div className="flex items-center justify-between mb-4">
                                         <div className={cn(
                                             "w-12 h-12 rounded-xl flex items-center justify-center",
@@ -222,21 +222,19 @@ export default function DashboardPage(): React.JSX.Element {
                                                 stats.problems.critical > 0 ? "text-red-600" : "text-amber-600"
                                             )} />
                                         </div>
-                                        <ArrowRight className={cn(
-                                            "w-5 h-5",
-                                            stats.problems.critical > 0 ? "text-red-400" : "text-amber-400"
-                                        )} />
+                                        <ArrowRight className="w-5 h-5 text-slate-400" />
                                     </div>
                                     <h3 className="text-sm font-medium text-slate-600 mb-1">Problems</h3>
                                     <div className="flex items-baseline gap-2 mb-2">
-                                        <div className="text-3xl font-bold text-slate-800">
+                                        <div className="text-3xl font-bold text-slate-900">
                                             {stats.problems.open}
                                         </div>
                                         <span className="text-sm text-slate-500">open</span>
                                     </div>
                                     <div className="flex items-center gap-4 text-xs">
                                         <span className={cn(
-                                            stats.problems.critical > 0 ? "text-red-700" : "text-slate-500"
+                                            "font-medium",
+                                            stats.problems.critical > 0 ? "text-red-600" : "text-slate-500"
                                         )}>
                                             {stats.problems.critical} critical
                                         </span>
@@ -249,90 +247,90 @@ export default function DashboardPage(): React.JSX.Element {
                     {/* Secondary Metrics */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
                         {/* Inbound Breakdown */}
-                        <Card variant="elevated" className="bg-white border border-slate-200">
+                        <Card variant="elevated" className="bg-white border border-slate-200 shadow-sm">
                             <div className="p-6">
-                                <h3 className="text-lg font-semibold text-slate-800 mb-4">Inbound Operations</h3>
-                                <div className="space-y-4">
+                                <h3 className="text-lg font-semibold text-slate-900 mb-5">Inbound Operations</h3>
+                                <div className="space-y-5">
                                     <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-3">
+                                        <div className="flex items-center gap-4">
                                             <div className="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center">
                                                 <Clock className="w-5 h-5 text-amber-600" />
                                             </div>
                                             <div>
-                                                <p className="text-sm font-medium text-slate-800">Scheduled</p>
+                                                <p className="text-sm font-medium text-slate-900">Scheduled</p>
                                                 <p className="text-xs text-slate-500">Awaiting receiving</p>
                                             </div>
                                         </div>
-                                        <div className="text-2xl font-bold text-amber-700">{stats.inbound.scheduled}</div>
+                                        <div className="text-2xl font-bold text-amber-600">{stats.inbound.scheduled}</div>
                                     </div>
                                     <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-3">
+                                        <div className="flex items-center gap-4">
                                             <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center">
                                                 <Activity className="w-5 h-5 text-blue-600" />
                                             </div>
                                             <div>
-                                                <p className="text-sm font-medium text-slate-800">Receiving</p>
+                                                <p className="text-sm font-medium text-slate-900">Receiving</p>
                                                 <p className="text-xs text-slate-500">In progress</p>
                                             </div>
                                         </div>
-                                        <div className="text-2xl font-bold text-blue-700">{stats.inbound.receiving}</div>
+                                        <div className="text-2xl font-bold text-blue-600">{stats.inbound.receiving}</div>
                                     </div>
                                     <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-3">
+                                        <div className="flex items-center gap-4">
                                             <div className="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center">
                                                 <Box className="w-5 h-5 text-purple-600" />
                                             </div>
                                             <div>
-                                                <p className="text-sm font-medium text-slate-800">Putaway Pending</p>
+                                                <p className="text-sm font-medium text-slate-900">Putaway Pending</p>
                                                 <p className="text-xs text-slate-500">Ready to store</p>
                                             </div>
                                         </div>
-                                        <div className="text-2xl font-bold text-purple-700">{stats.inbound.putaway_pending}</div>
+                                        <div className="text-2xl font-bold text-purple-600">{stats.inbound.putaway_pending}</div>
                                     </div>
                                 </div>
                             </div>
                         </Card>
 
                         {/* Outbound Breakdown */}
-                        <Card variant="elevated" className="bg-white border border-slate-200">
+                        <Card variant="elevated" className="bg-white border border-slate-200 shadow-sm">
                             <div className="p-6">
-                                <h3 className="text-lg font-semibold text-slate-800 mb-4">Outbound Operations</h3>
-                                <div className="space-y-4">
+                                <h3 className="text-lg font-semibold text-slate-900 mb-5">Outbound Operations</h3>
+                                <div className="space-y-5">
                                     <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center">
-                                                <Activity className="w-5 h-5 text-indigo-600" />
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center">
+                                                <Activity className="w-5 h-5 text-purple-600" />
                                             </div>
                                             <div>
-                                                <p className="text-sm font-medium text-slate-800">Active Waves</p>
+                                                <p className="text-sm font-medium text-slate-900">Active Waves</p>
                                                 <p className="text-xs text-slate-500">Released for picking</p>
                                             </div>
                                         </div>
-                                        <div className="text-2xl font-bold text-indigo-700">{stats.outbound.waves_active}</div>
+                                        <div className="text-2xl font-bold text-purple-600">{stats.outbound.waves_active}</div>
                                     </div>
                                     <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-3">
+                                        <div className="flex items-center gap-4">
                                             <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center">
                                                 <Box className="w-5 h-5 text-blue-600" />
                                             </div>
                                             <div>
-                                                <p className="text-sm font-medium text-slate-800">Picking</p>
+                                                <p className="text-sm font-medium text-slate-900">Picking</p>
                                                 <p className="text-xs text-slate-500">Items being picked</p>
                                             </div>
                                         </div>
-                                        <div className="text-2xl font-bold text-blue-700">{stats.outbound.picking_active}</div>
+                                        <div className="text-2xl font-bold text-blue-600">{stats.outbound.picking_active}</div>
                                     </div>
                                     <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-3">
+                                        <div className="flex items-center gap-4">
                                             <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center">
                                                 <CheckCircle className="w-5 h-5 text-emerald-600" />
                                             </div>
                                             <div>
-                                                <p className="text-sm font-medium text-slate-800">Shipped Today</p>
+                                                <p className="text-sm font-medium text-slate-900">Shipped Today</p>
                                                 <p className="text-xs text-slate-500">Orders completed</p>
                                             </div>
                                         </div>
-                                        <div className="text-2xl font-bold text-emerald-700">{stats.outbound.shipped_today}</div>
+                                        <div className="text-2xl font-bold text-emerald-600">{stats.outbound.shipped_today}</div>
                                     </div>
                                 </div>
                             </div>
@@ -341,15 +339,15 @@ export default function DashboardPage(): React.JSX.Element {
 
                     {/* Recent Activity */}
                     {activity.length > 0 && (
-                        <Card variant="elevated" className="bg-white border border-slate-200">
+                        <Card variant="elevated" className="bg-white border border-slate-200 shadow-sm">
                             <div className="p-6">
-                                <h3 className="text-lg font-semibold text-slate-800 mb-4">Recent Activity</h3>
-                                <div className="space-y-3">
+                                <h3 className="text-lg font-semibold text-slate-900 mb-5">Recent Activity</h3>
+                                <div className="space-y-4">
                                     {activity.slice(0, 5).map((item) => (
                                         <div key={item.id} className="flex items-start gap-3 py-2">
-                                            <div className="w-2 h-2 rounded-full bg-blue-500 mt-2"></div>
-                                            <div className="flex-1">
-                                                <p className="text-sm text-slate-800">{item.description}</p>
+                                            <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 flex-shrink-0"></div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm text-slate-900">{item.description}</p>
                                                 <div className="flex items-center gap-2 text-xs text-slate-500 mt-1">
                                                     {item.user_name && <span>{item.user_name}</span>}
                                                     <span>•</span>

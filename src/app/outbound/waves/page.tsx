@@ -138,7 +138,7 @@ export default function WavesPage(): React.JSX.Element {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50">
+        <div className="min-h-screen bg-white">
             <Sidebar />
 
             <main className="main-content">
@@ -146,7 +146,7 @@ export default function WavesPage(): React.JSX.Element {
                     {/* Header */}
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                         <div>
-                            <h1 className="text-2xl font-bold text-slate-800">Wave Management</h1>
+                            <h1 className="text-2xl font-bold text-slate-900">Wave Management</h1>
                             <p className="text-slate-600 mt-1">
                                 Create and manage picking waves
                             </p>
@@ -164,19 +164,19 @@ export default function WavesPage(): React.JSX.Element {
 
                     {/* Stats */}
                     <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
-                        <Card variant="elevated" className="bg-white border border-slate-200">
+                        <Card variant="elevated" className="bg-white border border-slate-200 shadow-sm">
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center">
-                                    <WavesIcon className="w-5 h-5 text-slate-600" />
+                                <div className="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center">
+                                    <WavesIcon className="w-5 h-5 text-purple-600" />
                                 </div>
                                 <div>
-                                    <div className="text-2xl font-bold text-slate-800">{stats.total}</div>
+                                    <div className="text-2xl font-bold text-purple-700">{stats.total}</div>
                                     <div className="text-sm text-slate-600">Total Waves</div>
                                 </div>
                             </div>
                         </Card>
 
-                        <Card variant="elevated" className="bg-white border border-amber-200">
+                        <Card variant="elevated" className="bg-white border border-slate-200 shadow-sm">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center">
                                     <Clock className="w-5 h-5 text-amber-600" />
@@ -188,7 +188,7 @@ export default function WavesPage(): React.JSX.Element {
                             </div>
                         </Card>
 
-                        <Card variant="elevated" className="bg-white border border-blue-200">
+                        <Card variant="elevated" className="bg-white border border-slate-200 shadow-sm">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center">
                                     <Package className="w-5 h-5 text-blue-600" />
@@ -200,7 +200,7 @@ export default function WavesPage(): React.JSX.Element {
                             </div>
                         </Card>
 
-                        <Card variant="elevated" className="bg-white border border-purple-200">
+                        <Card variant="elevated" className="bg-white border border-slate-200 shadow-sm">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center">
                                     <Package className="w-5 h-5 text-purple-600" />
@@ -212,7 +212,7 @@ export default function WavesPage(): React.JSX.Element {
                             </div>
                         </Card>
 
-                        <Card variant="elevated" className="bg-white border border-emerald-200">
+                        <Card variant="elevated" className="bg-white border border-slate-200 shadow-sm">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center">
                                     <CheckCircle className="w-5 h-5 text-emerald-600" />
@@ -226,7 +226,7 @@ export default function WavesPage(): React.JSX.Element {
                     </div>
 
                     {/* Waves List */}
-                    <Card variant="elevated" padded={false} className="bg-white border border-slate-200">
+                    <Card variant="elevated" padded={false} className="bg-white border border-slate-200 shadow-sm">
                         <div className="p-6 border-b border-slate-200">
                             <CardHeader
                                 title="Active Waves"
@@ -236,14 +236,14 @@ export default function WavesPage(): React.JSX.Element {
 
                         {loading ? (
                             <div className="p-12 text-center">
-                                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
                                 <p className="text-slate-600 mt-4">Loading waves...</p>
                             </div>
                         ) : waves.length === 0 ? (
                             <div className="p-12 text-center">
                                 <WavesIcon className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                                <h3 className="text-lg font-semibold text-slate-700 mb-2">No waves yet</h3>
-                                <p className="text-slate-500 mb-6">Create your first wave to get started</p>
+                                <h3 className="text-lg font-semibold text-slate-900 mb-2">No waves yet</h3>
+                                <p className="text-slate-600 mb-6">Create your first wave to get started</p>
                                 <Button
                                     variant="primary"
                                     leftIcon={<Plus className="w-4 h-4" />}
@@ -281,7 +281,7 @@ export default function WavesPage(): React.JSX.Element {
                                                     <div className="flex items-start justify-between gap-4 mb-2">
                                                         <div>
                                                             <div className="flex items-center gap-2 mb-1">
-                                                                <h3 className="font-mono font-bold text-lg text-slate-800">
+                                                                <h3 className="font-mono font-bold text-lg text-slate-900">
                                                                     {wave.wave_number}
                                                                 </h3>
                                                                 <span className={cn(
@@ -299,10 +299,10 @@ export default function WavesPage(): React.JSX.Element {
                                                             </p>
                                                         </div>
                                                         <div className="text-right">
-                                                            <div className="text-2xl font-bold text-slate-800">
+                                                            <div className="text-2xl font-bold text-slate-900">
                                                                 {wave.total_shipments}
                                                             </div>
-                                                            <div className="text-xs text-slate-500">shipments</div>
+                                                            <div className="text-xs text-slate-600">shipments</div>
                                                         </div>
                                                     </div>
 
@@ -351,12 +351,12 @@ export default function WavesPage(): React.JSX.Element {
                     </Card>
 
                     {/* Info Card */}
-                    <Card variant="elevated" className="mt-8 bg-blue-50 border border-blue-200">
+                    <Card variant="elevated" className="mt-8 bg-purple-50 border border-purple-200">
                         <div className="flex items-start gap-3">
-                            <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                            <AlertCircle className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" />
                             <div>
-                                <h4 className="font-semibold text-blue-900 mb-1">Wave Management Tips</h4>
-                                <ul className="text-sm text-blue-800 space-y-1">
+                                <h4 className="font-semibold text-purple-900 mb-1">Wave Management Tips</h4>
+                                <ul className="text-sm text-purple-800 space-y-1">
                                     <li>• Create waves during off-peak hours for better performance</li>
                                     <li>• Release waves when pickers are ready to start</li>
                                     <li>• Monitor picking progress in real-time</li>

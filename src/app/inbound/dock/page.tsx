@@ -138,7 +138,7 @@ export default function DockPage(): React.JSX.Element {
                     {/* Header */}
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                         <div>
-                            <h1 className="text-2xl font-bold text-slate-800">Dock Management</h1>
+                            <h1 className="text-3xl font-bold text-slate-900">Dock Management</h1>
                             <p className="text-slate-600 mt-1">
                                 Assign inbound shipments to dock doors and carriers
                             </p>
@@ -147,37 +147,37 @@ export default function DockPage(): React.JSX.Element {
 
                     {/* Stats */}
                     <div className="grid grid-cols-3 gap-4 mb-8">
-                        <Card variant="elevated" className="bg-white border border-slate-200">
+                        <Card variant="elevated" className="bg-white border border-slate-200 shadow-sm">
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center">
-                                    <Truck className="w-5 h-5 text-slate-600" />
+                                <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                                    <Truck className="w-5 h-5 text-blue-600" />
                                 </div>
                                 <div>
-                                    <div className="text-2xl font-bold text-slate-800">{stats.total}</div>
+                                    <div className="text-2xl font-bold text-slate-900">{stats.total}</div>
                                     <div className="text-sm text-slate-600">Total Shipments</div>
                                 </div>
                             </div>
                         </Card>
 
-                        <Card variant="elevated" className="bg-white border border-emerald-200">
+                        <Card variant="elevated" className="bg-white border border-slate-200 shadow-sm">
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center">
+                                <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center">
                                     <CheckCircle className="w-5 h-5 text-emerald-600" />
                                 </div>
                                 <div>
-                                    <div className="text-2xl font-bold text-emerald-700">{stats.assigned}</div>
+                                    <div className="text-2xl font-bold text-slate-900">{stats.assigned}</div>
                                     <div className="text-sm text-slate-600">Assigned</div>
                                 </div>
                             </div>
                         </Card>
 
-                        <Card variant="elevated" className="bg-white border border-amber-200">
+                        <Card variant="elevated" className="bg-white border border-slate-200 shadow-sm">
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center">
+                                <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
                                     <Clock className="w-5 h-5 text-amber-600" />
                                 </div>
                                 <div>
-                                    <div className="text-2xl font-bold text-amber-700">{stats.unassigned}</div>
+                                    <div className="text-2xl font-bold text-slate-900">{stats.unassigned}</div>
                                     <div className="text-sm text-slate-600">Unassigned</div>
                                 </div>
                             </div>
@@ -186,9 +186,9 @@ export default function DockPage(): React.JSX.Element {
 
                     {/* Assignment Modal */}
                     {assigningShipment && (
-                        <Card variant="elevated" className="mb-8 bg-white border border-blue-200">
+                        <Card variant="elevated" className="mb-8 bg-white border border-slate-200 shadow-sm">
                             <div className="py-8">
-                                <h3 className="text-xl font-bold text-slate-800 text-center mb-4">
+                                <h3 className="text-xl font-bold text-slate-900 text-center mb-4">
                                     Assign {assigningShipment.asn_number}
                                 </h3>
                                 <p className="text-center text-slate-600 mb-6">
@@ -287,7 +287,7 @@ export default function DockPage(): React.JSX.Element {
                     )}
 
                     {/* Shipments List */}
-                    <Card variant="elevated" padded={false} className="bg-white border border-slate-200">
+                    <Card variant="elevated" padded={false} className="bg-white border border-slate-200 shadow-sm">
                         <div className="p-6 border-b border-slate-200">
                             <CardHeader
                                 title="Inbound Shipments"
@@ -303,8 +303,8 @@ export default function DockPage(): React.JSX.Element {
                         ) : shipments.length === 0 ? (
                             <div className="p-12 text-center">
                                 <Truck className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                                <h3 className="text-lg font-semibold text-slate-700 mb-2">No shipments</h3>
-                                <p className="text-slate-500">No inbound shipments to assign</p>
+                                <h3 className="text-lg font-semibold text-slate-900 mb-2">No shipments</h3>
+                                <p className="text-slate-600">No inbound shipments to assign</p>
                             </div>
                         ) : (
                             <div className="divide-y divide-slate-200">
@@ -331,13 +331,13 @@ export default function DockPage(): React.JSX.Element {
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex items-start justify-between gap-4 mb-2">
                                                         <div>
-                                                            <h3 className="font-mono font-bold text-lg text-slate-800 mb-1">
+                                                            <h3 className="font-mono font-bold text-lg text-slate-900 mb-1">
                                                                 {shipment.asn_number}
                                                             </h3>
                                                             <p className="text-sm text-slate-600">
                                                                 Supplier: {shipment.supplier_name}
                                                             </p>
-                                                            <p className="text-sm text-slate-500 mt-1">
+                                                            <p className="text-sm text-slate-600 mt-1">
                                                                 Expected: {new Date(shipment.expected_date).toLocaleString()}
                                                             </p>
                                                         </div>
@@ -358,7 +358,7 @@ export default function DockPage(): React.JSX.Element {
                                                                 <span className="font-medium">{shipment.dock_door}</span>
                                                             </div>
                                                             <div className="flex items-center gap-2">
-                                                                <Truck className="w-4 h-4 text-purple-500" />
+                                                                <Truck className="w-4 h-4 text-blue-500" />
                                                                 <span className="font-medium capitalize">{shipment.carrier}</span>
                                                             </div>
                                                         </div>

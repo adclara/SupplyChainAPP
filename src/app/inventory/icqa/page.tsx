@@ -160,7 +160,7 @@ export default function ICQAPage(): React.JSX.Element {
                     {/* Header */}
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                         <div>
-                            <h1 className="text-2xl font-bold text-slate-800">ICQA - Cycle Counts</h1>
+                            <h1 className="text-2xl font-bold text-slate-900">ICQA - Cycle Counts</h1>
                             <p className="text-slate-600 mt-1">
                                 Pull count tasks and perform blind counts
                             </p>
@@ -303,7 +303,7 @@ export default function ICQAPage(): React.JSX.Element {
                             ) : availableTasks.length === 0 ? (
                                 <div className="p-12 text-center">
                                     <ClipboardCheck className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                                    <h3 className="text-lg font-semibold text-slate-700 mb-2">No available tasks</h3>
+                                    <h3 className="text-lg font-semibold text-slate-900 mb-2">No available tasks</h3>
                                     <p className="text-slate-500">All count tasks are currently assigned</p>
                                 </div>
                             ) : (
@@ -318,7 +318,7 @@ export default function ICQAPage(): React.JSX.Element {
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex items-start justify-between gap-4 mb-2">
                                                         <div>
-                                                            <h3 className="font-mono font-bold text-lg text-slate-800 mb-1">
+                                                            <h3 className="font-mono font-bold text-lg text-slate-900 mb-1">
                                                                 {task.location.barcode}
                                                             </h3>
                                                             <p className="text-sm text-slate-600">
@@ -375,7 +375,7 @@ export default function ICQAPage(): React.JSX.Element {
                             ) : myTasks.length === 0 ? (
                                 <div className="p-12 text-center">
                                     <User className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                                    <h3 className="text-lg font-semibold text-slate-700 mb-2">No active tasks</h3>
+                                    <h3 className="text-lg font-semibold text-slate-900 mb-2">No active tasks</h3>
                                     <p className="text-slate-500 mb-6">Pull a task from available tasks to get started</p>
                                     <Button
                                         variant="primary"
@@ -396,7 +396,7 @@ export default function ICQAPage(): React.JSX.Element {
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex items-start justify-between gap-4 mb-2">
                                                         <div>
-                                                            <h3 className="font-mono font-bold text-lg text-slate-800 mb-1">
+                                                            <h3 className="font-mono font-bold text-lg text-slate-900 mb-1">
                                                                 {task.location.barcode}
                                                             </h3>
                                                             <p className="text-sm text-slate-600">
@@ -449,8 +449,8 @@ export default function ICQAPage(): React.JSX.Element {
                         <div className="flex items-start gap-3">
                             <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
                             <div>
-                                <h4 className="font-semibold text-blue-900 mb-1">ICQA Tips</h4>
-                                <ul className="text-sm text-blue-800 space-y-1">
+                                <h4 className="font-semibold text-slate-900 mb-1">ICQA Tips</h4>
+                                <ul className="text-sm text-slate-600 space-y-1">
                                     <li>• Pull tasks from the available queue to start counting</li>
                                     <li>• For blind counts, enter quantity without checking system</li>
                                     <li>• Variances automatically create problem tickets</li>
