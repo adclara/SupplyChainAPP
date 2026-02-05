@@ -86,6 +86,7 @@ export interface Product {
   dimensions_cm: ProductDimensions | null;
   weight_kg: number | null;
   image_url: string | null;
+  min_stock_level: number | null;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -234,7 +235,7 @@ export interface ProblemTicket {
 // TRANSACTION TYPES
 // =============================================================================
 
-export type TransactionType = 'receive' | 'putaway' | 'pick' | 'pack' | 'adjust' | 'inventory_update';
+export type TransactionType = 'receive' | 'putaway' | 'pick' | 'pack' | 'adjust' | 'inventory_update' | 'move';
 export type TransactionStatus = 'pending' | 'completed' | 'failed';
 
 export interface Transaction {

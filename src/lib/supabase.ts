@@ -5,22 +5,50 @@
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+/**
+ * Get a required environment variable with proper error handling
+ * @param name - Environment variable name
+ * @returns The environment variable value
+ * @throws Error in production if variable is missing
+ */
+function getRequiredEnv(name: string): string {
+    const value = process.env[name];
 
-if (!supabaseUrl || !supabaseAnonKey) {
-    console.warn(
-        'Supabase environment variables are not set. Using placeholder values for development.'
-    );
+    if (!value) {
+        // In production, fail fast - don't allow placeholder values
+        if (process.env.NODE_ENV === 'production') {
+            throw new Error(
+                `Missing required environment variable: ${name}. ` +
+                `Please set this in your environment before deploying.`
+            );
+        }
+
+        // In development, warn and use placeholder for local testing
+        console.warn(
+            `[DEV] Missing environment variable: ${name}. ` +
+            `Using placeholder value. Set this before deploying.`
+        );
+
+        // Return appropriate placeholder based on variable type
+        if (name.includes('URL')) {
+            return 'https://placeholder.supabase.co';
+        }
+        return 'placeholder-anon-key';
+    }
+
+    return value;
 }
+
+const supabaseUrl = getRequiredEnv('NEXT_PUBLIC_SUPABASE_URL');
+const supabaseAnonKey = getRequiredEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY');
 
 /**
  * Browser Supabase client for client-side operations
  * Uses the anonymous key with RLS policies
  */
 export const supabase: SupabaseClient = createClient(
-    supabaseUrl || 'https://placeholder.supabase.co',
-    supabaseAnonKey || 'placeholder-anon-key',
+    supabaseUrl,
+    supabaseAnonKey,
     {
         auth: {
             persistSession: true,
@@ -38,9 +66,16 @@ export const supabase: SupabaseClient = createClient(
 export function createServerClient(serviceRoleKey?: string): SupabaseClient {
     const key = serviceRoleKey || process.env.SUPABASE_SERVICE_ROLE_KEY;
 
+    if (!key && process.env.NODE_ENV === 'production') {
+        throw new Error(
+            'Missing SUPABASE_SERVICE_ROLE_KEY for server-side operations. ' +
+            'This is required for admin operations in production.'
+        );
+    }
+
     return createClient(
-        supabaseUrl || 'https://placeholder.supabase.co',
-        key || supabaseAnonKey || 'placeholder-key',
+        supabaseUrl,
+        key || supabaseAnonKey,
         {
             auth: {
                 persistSession: false,

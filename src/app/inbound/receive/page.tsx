@@ -14,11 +14,17 @@ import {
     Package,
     AlertCircle,
     Truck,
+    Search,
+    Filter,
+    AlertTriangle,
 } from 'lucide-react';
+import { addStock, getReceivingLocation, getQuarantineLocation } from '@/services/inventoryService';
 import { Sidebar } from '@/components/layout/Sidebar';
-import { Card, CardHeader } from '@/components/ui/Card';
+import { Card, CardHeader, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { Badge } from '@/components/ui/Badge';
+import { Table, THead, TBody, TH, TR, TD } from '@/components/ui/Table';
 import { cn } from '@/lib/utils';
 import { useUserStore } from '@/store/userStore';
 import {
@@ -27,9 +33,14 @@ import {
     receiveItem,
     completeReceiving,
     getInboundLines,
+    createInboundShipment,
     type InboundShipment,
     type InboundLineWithDetails,
+    type CreateInboundShipmentParams,
 } from '@/services/inboundService';
+import { Modal } from '@/components/ui/Modal';
+import { createShipmentSchema, manualReceiveSchema, type CreateShipmentValues } from '@/lib/validations/inbound';
+import { Plus, FileText } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 export default function ReceivePage(): React.JSX.Element {
@@ -41,6 +52,27 @@ export default function ReceivePage(): React.JSX.Element {
     const [scanMode, setScanMode] = useState(false);
     const [scannedBarcode, setScannedBarcode] = useState('');
     const [actioningId, setActioningId] = useState<string | null>(null);
+
+    // Create Shipment Modal State
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [createForm, setCreateForm] = useState<CreateShipmentValues>({
+        asn_number: '',
+        supplier_name: '',
+        expected_date: new Date().toISOString().split('T')[0],
+        carrier: '',
+    });
+    const [createErrors, setCreateErrors] = useState<Record<string, string>>({});
+
+    // Manual Receive Modal State
+    const [isManualModalOpen, setIsManualModalOpen] = useState(false);
+    const [manualQty, setManualQty] = useState('');
+    const [manualBarcode, setManualBarcode] = useState('');
+    const [isDamaged, setIsDamaged] = useState(false);
+    const [damageNotes, setDamageNotes] = useState('');
+
+    // Search & Filter State
+    const [searchQuery, setSearchQuery] = useState('');
+    const [statusFilter, setStatusFilter] = useState<'all' | 'scheduled' | 'receiving' | 'received'>('all');
 
     useEffect(() => {
         if (user?.warehouse_id) {
@@ -120,6 +152,24 @@ export default function ReceivePage(): React.JSX.Element {
             const updatedLines = await getInboundLines(receivingShipment.id);
             setLines(updatedLines);
 
+            // Update Inventory
+            try {
+                if (user?.warehouse_id && user?.id) {
+                    const locId = await getReceivingLocation(user.warehouse_id);
+                    await addStock(
+                        user.warehouse_id,
+                        matchingLine.product_id,
+                        locId,
+                        1,
+                        user.id,
+                        receivingShipment.id
+                    );
+                }
+            } catch (invError) {
+                console.error('Inventory sync failed:', invError);
+                // Don't block the UI flow, but maybe warn?
+            }
+
             toast.success(`Received 1x ${matchingLine.product.name}`);
             setScannedBarcode('');
         } catch (error) {
@@ -148,6 +198,113 @@ export default function ReceivePage(): React.JSX.Element {
         }
     }
 
+    async function handleCreateShipment() {
+        if (!user?.warehouse_id) return;
+
+        try {
+            // Validate
+            const validated = createShipmentSchema.parse(createForm);
+            setCreateErrors({});
+
+            await createInboundShipment({
+                ...validated,
+                warehouse_id: user.warehouse_id,
+                carrier: validated.carrier || undefined
+            });
+
+            toast.success('Shipment created successfully');
+            setIsCreateModalOpen(false);
+            setCreateForm({
+                asn_number: '',
+                supplier_name: '',
+                expected_date: new Date().toISOString().split('T')[0],
+                carrier: '',
+            });
+            fetchShipments();
+        } catch (error: any) {
+            if (error.issues) {
+                const errors: Record<string, string> = {};
+                error.issues.forEach((issue: any) => {
+                    errors[issue.path[0]] = issue.message;
+                });
+                setCreateErrors(errors);
+            } else {
+                toast.error('Failed to create shipment');
+            }
+        }
+    }
+
+    async function handleManualReceive() {
+        if (!receivingShipment || !manualBarcode || !manualQty) return;
+
+        try {
+            const qty = parseInt(manualQty);
+            if (isNaN(qty) || qty <= 0) {
+                toast.error('Invalid quantity');
+                return;
+            }
+
+            const matchingLine = lines.find(
+                line => line.product.barcode === manualBarcode.trim() || line.product.sku === manualBarcode.trim()
+            );
+
+            if (!matchingLine) {
+                toast.error('Item not found');
+                return;
+            }
+
+            if ((matchingLine.received_quantity + qty) > matchingLine.expected_quantity) {
+                if (!confirm(`Warning: You are receiving more than expected (${matchingLine.expected_quantity}). Continue?`)) {
+                    return;
+                }
+            }
+
+            await receiveItem(matchingLine.id, qty);
+
+            const updatedLines = await getInboundLines(receivingShipment.id);
+            setLines(updatedLines);
+
+            // Update Inventory
+            try {
+                if (user?.warehouse_id && user?.id) {
+                    let locId: string;
+
+                    if (isDamaged) {
+                        try {
+                            locId = await getQuarantineLocation(user.warehouse_id);
+                        } catch {
+                            // If no quarantine, fallback to receiving but warn
+                            toast.error('No Quarantine location found! Using Dock.');
+                            locId = await getReceivingLocation(user.warehouse_id);
+                        }
+                    } else {
+                        locId = await getReceivingLocation(user.warehouse_id);
+                    }
+
+                    await addStock(
+                        user.warehouse_id,
+                        matchingLine.product_id,
+                        locId,
+                        qty,
+                        user.id,
+                        receivingShipment.id
+                    );
+                }
+            } catch (invError) {
+                console.error('Inventory sync failed:', invError);
+            }
+
+            toast.success(isDamaged ? `Reported ${qty}x Damaged` : `Received ${qty}x ${matchingLine.product.name}`);
+            setManualQty('');
+            setManualBarcode('');
+            setIsDamaged(false);
+            setDamageNotes('');
+            setIsManualModalOpen(false);
+        } catch (error) {
+            toast.error('Failed to receive items');
+        }
+    }
+
     const stats = {
         scheduled: shipments.filter(s => s.status === 'scheduled').length,
         receiving: shipments.filter(s => s.status === 'receiving').length,
@@ -155,109 +312,108 @@ export default function ReceivePage(): React.JSX.Element {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50">
+        <div className="min-h-screen bg-[#0a0a0c] text-white">
             <Sidebar />
 
             <main className="main-content">
-                <div className="page-container animate-fade-in">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-in fade-in duration-500">
                     {/* Header */}
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                         <div>
-                            <h1 className="text-3xl font-bold text-slate-900">Receiving</h1>
-                            <p className="text-slate-600 mt-1">
-                                Receive inbound shipments and scan items
+                            <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-3">
+                                <PackageCheck className="w-8 h-8 text-blue-500" />
+                                Inbound Receiving
+                            </h1>
+                            <p className="text-zinc-400 mt-1">
+                                Secure personnel portal for shipment intake and inventory verification
                             </p>
                         </div>
+                        <Button
+                            leftIcon={<Plus className="w-5 h-5" />}
+                            variant="primary"
+                            onClick={() => setIsCreateModalOpen(true)}
+                        >
+                            Register Shipment
+                        </Button>
                     </div>
 
                     {/* Stats */}
-                    <div className="grid grid-cols-3 gap-4 mb-8">
-                        <Card variant="elevated" className="bg-white border border-slate-200 shadow-sm">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
-                                    <Clock className="w-5 h-5 text-amber-600" />
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                        {[
+                            { label: 'Scheduled', val: stats.scheduled, icon: Clock, color: 'text-amber-400', bg: 'bg-amber-500/10' },
+                            { label: 'Receiving', val: stats.receiving, icon: Package, color: 'text-blue-400', bg: 'bg-blue-500/10' },
+                            { label: 'Received', val: stats.received, icon: CheckCircle, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
+                        ].map((s, i) => (
+                            <Card key={i} className="bg-[#141417] border-[#27272a] p-4">
+                                <div className="flex items-center gap-4">
+                                    <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center border border-white/5", s.bg, s.color)}>
+                                        <s.icon className="w-6 h-6" />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-zinc-500 uppercase tracking-widest font-bold">{s.label}</p>
+                                        <p className="text-2xl font-bold text-white">{s.val}</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <div className="text-2xl font-bold text-slate-900">{stats.scheduled}</div>
-                                    <div className="text-sm text-slate-600">Scheduled</div>
-                                </div>
-                            </div>
-                        </Card>
-
-                        <Card variant="elevated" className="bg-white border border-slate-200 shadow-sm">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                                    <Package className="w-5 h-5 text-blue-600" />
-                                </div>
-                                <div>
-                                    <div className="text-2xl font-bold text-slate-900">{stats.receiving}</div>
-                                    <div className="text-sm text-slate-600">Receiving</div>
-                                </div>
-                            </div>
-                        </Card>
-
-                        <Card variant="elevated" className="bg-white border border-slate-200 shadow-sm">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center">
-                                    <CheckCircle className="w-5 h-5 text-emerald-600" />
-                                </div>
-                                <div>
-                                    <div className="text-2xl font-bold text-slate-900">{stats.received}</div>
-                                    <div className="text-sm text-slate-600">Received</div>
-                                </div>
-                            </div>
-                        </Card>
+                            </Card>
+                        ))}
                     </div>
 
-                    {/* Receiving Mode */}
+                    {/* Receiving Mode Console */}
                     {scanMode && receivingShipment && (
-                        <Card variant="elevated" className="mb-8 bg-white border border-slate-200 shadow-sm">
-                            <div className="py-8">
-                                <h3 className="text-xl font-bold text-slate-900 text-center mb-4">
-                                    Receiving {receivingShipment.asn_number}
-                                </h3>
+                        <Card className="mb-8 border-blue-500/20 bg-blue-500/5 overflow-hidden">
+                            <div className="p-6 border-b border-blue-500/20 bg-blue-500/10 flex items-center justify-between">
+                                <div>
+                                    <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                                        <Scan className="w-5 h-5 text-blue-400" />
+                                        ACTIVE CONSOLE: {receivingShipment.asn_number}
+                                    </h3>
+                                    <p className="text-xs text-blue-400 font-mono mt-0.5 uppercase tracking-tighter">Secure Protocol: Intake & Verification</p>
+                                </div>
+                                <Badge variant="primary" glow>IN PROGRESS</Badge>
+                            </div>
 
-                                {/* Progress */}
-                                <div className="max-w-2xl mx-auto mb-6">
-                                    <div className="bg-slate-50 rounded-lg p-4">
-                                        <div className="space-y-2">
-                                            {lines.map((line) => {
-                                                const progress = (line.received_quantity / line.expected_quantity) * 100;
-                                                const isComplete = line.status === 'received';
+                            <div className="p-8">
+                                {/* Lines Grid */}
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
+                                    {lines.map((line) => {
+                                        const progress = (line.received_quantity / line.expected_quantity) * 100;
+                                        const isComplete = line.status === 'received';
 
-                                                return (
-                                                    <div key={line.id} className="flex items-center justify-between bg-white p-3 rounded-lg border border-slate-200">
-                                                        <div className="flex-1">
-                                                            <p className="font-medium text-slate-900">{line.product.name}</p>
-                                                            <p className="text-sm text-slate-600">SKU: {line.product.sku}</p>
-                                                        </div>
-                                                        <div className="flex items-center gap-4">
-                                                            <div className="text-right">
-                                                                <p className={cn(
-                                                                    "text-lg font-bold",
-                                                                    isComplete ? "text-emerald-600" : "text-slate-900"
-                                                                )}>
-                                                                    {line.received_quantity} / {line.expected_quantity}
-                                                                </p>
-                                                                <div className="w-24 h-2 bg-slate-200 rounded-full mt-1">
-                                                                    <div
-                                                                        className={cn(
-                                                                            "h-full rounded-full transition-all",
-                                                                            isComplete ? "bg-emerald-500" : "bg-blue-500"
-                                                                        )}
-                                                                        style={{ width: `${Math.min(progress, 100)}%` }}
-                                                                    />
-                                                                </div>
-                                                            </div>
-                                                            {isComplete && (
-                                                                <CheckCircle className="w-5 h-5 text-emerald-500" />
-                                                            )}
-                                                        </div>
+                                        return (
+                                            <div key={line.id} className={cn(
+                                                "p-4 rounded-xl border transition-all",
+                                                isComplete
+                                                    ? "bg-emerald-500/5 border-emerald-500/20"
+                                                    : "bg-[#1c1c21] border-[#27272a]"
+                                            )}>
+                                                <div className="flex justify-between items-start mb-3">
+                                                    <div>
+                                                        <p className="font-bold text-white">{line.product.name}</p>
+                                                        <p className="text-xs text-zinc-500 font-mono uppercase">SKU: {line.product.sku}</p>
                                                     </div>
-                                                );
-                                            })}
-                                        </div>
-                                    </div>
+                                                    {isComplete && <CheckCircle className="w-5 h-5 text-emerald-500" />}
+                                                </div>
+
+                                                <div className="flex items-center gap-4">
+                                                    <div className="flex-1 h-1.5 bg-black/40 rounded-full overflow-hidden">
+                                                        <div
+                                                            className={cn(
+                                                                "h-full transition-all duration-500",
+                                                                isComplete ? "bg-emerald-500" : "bg-blue-500"
+                                                            )}
+                                                            style={{ width: `${Math.min(progress, 100)}%` }}
+                                                        />
+                                                    </div>
+                                                    <span className={cn(
+                                                        "text-sm font-bold font-mono",
+                                                        isComplete ? "text-emerald-400" : "text-zinc-400"
+                                                    )}>
+                                                        {line.received_quantity}/{line.expected_quantity}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
 
                                 {/* Scan Input */}
@@ -290,123 +446,322 @@ export default function ReceivePage(): React.JSX.Element {
                                             Cancel
                                         </Button>
                                     </div>
+                                    <div className="text-center">
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="text-blue-400 hover:text-blue-300"
+                                            onClick={() => setIsManualModalOpen(true)}
+                                        >
+                                            Switch to Manual Entry
+                                        </Button>
+                                    </div>
                                 </div>
                             </div>
                         </Card>
                     )}
 
-                    {/* Shipments List */}
-                    <Card variant="elevated" padded={false} className="bg-white border border-slate-200 shadow-sm">
-                        <div className="p-6 border-b border-slate-200">
-                            <CardHeader
-                                title="Inbound Shipments"
-                                subtitle={`${shipments.length} shipments to receive`}
+                    {/* Search and Filter Controls */}
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
+                        <div className="relative w-full sm:w-96">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                            <Input
+                                placeholder="Search by ASN, Supplier..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="pl-10"
                             />
                         </div>
 
-                        {loading ? (
-                            <div className="p-12 text-center">
-                                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-                                <p className="text-slate-600 mt-4">Loading shipments...</p>
-                            </div>
-                        ) : shipments.length === 0 ? (
-                            <div className="p-12 text-center">
-                                <PackageCheck className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                                <h3 className="text-lg font-semibold text-slate-900 mb-2">No inbound shipments</h3>
-                                <p className="text-slate-600">All shipments have been received</p>
-                            </div>
-                        ) : (
-                            <div className="divide-y divide-slate-200">
-                                {shipments.map((shipment) => {
-                                    const isActioning = actioningId === shipment.id;
+                        <div className="flex bg-[#1c1c21] p-1 rounded-lg border border-white/5">
+                            {(['all', 'scheduled', 'receiving', 'received'] as const).map((status) => (
+                                <button
+                                    key={status}
+                                    onClick={() => setStatusFilter(status)}
+                                    className={cn(
+                                        "px-4 py-1.5 text-sm font-medium rounded-md capitalize transition-all",
+                                        statusFilter === status
+                                            ? "bg-blue-600 text-white shadow-sm"
+                                            : "text-zinc-400 hover:text-white hover:bg-white/5"
+                                    )}
+                                >
+                                    {status}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
 
-                                    return (
-                                        <div
-                                            key={shipment.id}
-                                            className="p-6 hover:bg-slate-50 transition-colors"
-                                        >
-                                            <div className="flex items-start gap-4">
-                                                <div className={cn(
-                                                    "w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0",
-                                                    shipment.status === 'scheduled' ? 'bg-amber-100' :
-                                                        shipment.status === 'receiving' ? 'bg-blue-100' :
-                                                            'bg-emerald-100'
-                                                )}>
-                                                    {shipment.status === 'scheduled' ? (
-                                                        <Clock className="w-6 h-6 text-amber-600" />
-                                                    ) : shipment.status === 'receiving' ? (
-                                                        <Package className="w-6 h-6 text-blue-600" />
-                                                    ) : (
-                                                        <CheckCircle className="w-6 h-6 text-emerald-600" />
-                                                    )}
-                                                </div>
-
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="flex items-start justify-between gap-4 mb-2">
-                                                        <div>
-                                                            <h3 className="font-mono font-bold text-lg text-slate-900 mb-1">
-                                                                {shipment.asn_number}
-                                                            </h3>
-                                                            <p className="text-sm text-slate-600">
-                                                                Supplier: {shipment.supplier_name}
-                                                            </p>
-                                                            <div className="flex items-center gap-4 text-sm text-slate-600 mt-1">
-                                                                <span>Expected: {new Date(shipment.expected_date).toLocaleDateString()}</span>
-                                                                {shipment.carrier && (
-                                                                    <span className="flex items-center gap-1">
-                                                                        <Truck className="w-4 h-4" />
-                                                                        {shipment.carrier}
-                                                                    </span>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                        <span className={cn(
-                                                            'px-3 py-1 rounded-full text-xs font-semibold border',
-                                                            shipment.status === 'scheduled'
-                                                                ? 'text-amber-700 bg-amber-50 border-amber-200'
-                                                                : shipment.status === 'receiving'
-                                                                    ? 'text-blue-700 bg-blue-50 border-blue-200'
-                                                                    : 'text-emerald-700 bg-emerald-50 border-emerald-200'
+                    {/* Shipments List */}
+                    <Card className="overflow-hidden">
+                        <CardHeader
+                            title="Personnel intake Protocol"
+                            subtitle={`${shipments.length} Pending shipments requiring verification`}
+                            action={<Button variant="ghost" size="sm" onClick={fetchShipments}><Clock className="w-4 h-4 mr-2" /> Refresh Data</Button>}
+                        />
+                        <Table>
+                            <THead>
+                                <TR>
+                                    <TH>Shipment / ASN</TH>
+                                    <TH>Supplier</TH>
+                                    <TH>Carrier</TH>
+                                    <TH>ETA</TH>
+                                    <TH>Status</TH>
+                                    <TH className="text-right">Action</TH>
+                                </TR>
+                            </THead>
+                            <TBody>
+                                {loading ? (
+                                    <TR>
+                                        <TD colSpan={6} className="py-24 text-center">
+                                            <div className="animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+                                            <p className="text-zinc-500 font-bold tracking-widest uppercase">Syncing Manifest Data...</p>
+                                        </TD>
+                                    </TR>
+                                ) : shipments.length === 0 ? (
+                                    <TR>
+                                        <TD colSpan={6} className="py-24 text-center">
+                                            <PackageCheck className="w-12 h-12 text-zinc-700 mx-auto mb-4" />
+                                            <h3 className="text-lg font-bold text-zinc-500 mb-1 uppercase tracking-wider">No Manifests Found</h3>
+                                            <p className="text-zinc-600">All scheduled cargo has been processed.</p>
+                                        </TD>
+                                    </TR>
+                                ) : (
+                                    shipments
+                                        .filter(s => {
+                                            const matchesSearch =
+                                                s.asn_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                                s.supplier_name.toLowerCase().includes(searchQuery.toLowerCase());
+                                            const matchesStatus = statusFilter === 'all' || s.status === statusFilter;
+                                            return matchesSearch && matchesStatus;
+                                        })
+                                        .map((shipment) => (
+                                            <TR key={shipment.id}>
+                                                <TD>
+                                                    <div className="flex items-center gap-3">
+                                                        <div className={cn(
+                                                            "w-10 h-10 rounded-lg flex items-center justify-center border",
+                                                            shipment.status === 'scheduled' ? 'bg-amber-500/10 border-amber-500/20 text-amber-500' :
+                                                                'bg-blue-500/10 border-blue-500/20 text-blue-500'
                                                         )}>
-                                                            {shipment.status.toUpperCase()}
-                                                        </span>
+                                                            <Truck className="w-5 h-5" />
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-bold text-white font-mono">{shipment.asn_number}</p>
+                                                            <p className="text-[10px] text-zinc-500 uppercase tracking-tighter">ID: {shipment.id.split('-')[0]}</p>
+                                                        </div>
                                                     </div>
-
+                                                </TD>
+                                                <TD>
+                                                    <p className="text-sm font-medium text-zinc-300">{shipment.supplier_name}</p>
+                                                </TD>
+                                                <TD>
+                                                    <div className="flex items-center gap-2 text-zinc-400">
+                                                        <Truck className="w-4 h-4 text-zinc-600" />
+                                                        <span className="text-xs uppercase font-bold tracking-tight">{shipment.carrier || 'Unassigned'}</span>
+                                                    </div>
+                                                </TD>
+                                                <TD className="text-xs font-mono text-zinc-500">
+                                                    {new Date(shipment.expected_date).toLocaleDateString()}
+                                                </TD>
+                                                <TD>
+                                                    <Badge
+                                                        variant={shipment.status === 'scheduled' ? 'warning' : 'primary'}
+                                                        glow={shipment.status === 'receiving'}
+                                                    >
+                                                        {shipment.status}
+                                                    </Badge>
+                                                </TD>
+                                                <TD className="text-right">
                                                     {shipment.status === 'scheduled' && (
                                                         <Button
                                                             variant="primary"
                                                             size="sm"
+                                                            className="bg-blue-600 hover:bg-blue-500"
                                                             leftIcon={<PackageCheck className="w-4 h-4" />}
                                                             onClick={() => handleStartReceiving(shipment)}
-                                                            disabled={isActioning}
+                                                            isLoading={actioningId === shipment.id}
                                                         >
-                                                            {isActioning ? 'Starting...' : 'Start Receiving'}
+                                                            Initiate Intake
                                                         </Button>
                                                     )}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        )}
+                                                    {shipment.status === 'receiving' && (
+                                                        <Button
+                                                            variant="secondary"
+                                                            size="sm"
+                                                            className="border-blue-500/30 bg-blue-500/10 text-blue-400"
+                                                            onClick={() => {
+                                                                setReceivingShipment(shipment);
+                                                                setScanMode(true);
+                                                                getInboundLines(shipment.id).then(setLines);
+                                                            }}
+                                                        >
+                                                            Resume Console
+                                                        </Button>
+                                                    )}
+                                                </TD>
+                                            </TR>
+                                        ))
+                                )}
+                            </TBody>
+                        </Table>
                     </Card>
 
-                    {/* Info Card */}
-                    <Card variant="elevated" className="mt-8 bg-blue-50 border border-blue-200">
-                        <div className="flex items-start gap-3">
-                            <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                    {/* Operational Alerts */}
+                    <Card className="mt-8 border-blue-500/20 bg-blue-500/5">
+                        <div className="flex items-start gap-4 p-4">
+                            <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
+                                <AlertCircle className="w-5 h-5 text-blue-400" />
+                            </div>
                             <div>
-                                <h4 className="font-semibold text-blue-900 mb-1">Receiving Tips</h4>
-                                <ul className="text-sm text-blue-800 space-y-1">
-                                    <li>• Start receiving to begin scanning items</li>
-                                    <li>• Scan each item's barcode to record receipt</li>
-                                    <li>• Complete receiving when all items are scanned</li>
+                                <h4 className="font-bold text-white uppercase tracking-wider text-sm mb-1">Standard Operating Procedures</h4>
+                                <ul className="text-xs text-zinc-400 space-y-1.5 list-none pl-0">
+                                    <li className="flex items-start gap-2">
+                                        <span className="text-blue-500">▶</span>
+                                        Verify physical manifest against digital record before initiating intake.
+                                    </li>
+                                    <li className="flex items-start gap-2">
+                                        <span className="text-blue-500">▶</span>
+                                        Report any transit damages via the "Problem Solve" terminal immediately.
+                                    </li>
+                                    <li className="flex items-start gap-2">
+                                        <span className="text-blue-500">▶</span>
+                                        Ensure LPN labels are clearly visible on all received pallets.
+                                    </li>
                                 </ul>
                             </div>
                         </div>
                     </Card>
                 </div>
+
+                {/* Create Shipment Modal */}
+                <Modal
+                    isOpen={isCreateModalOpen}
+                    onClose={() => setIsCreateModalOpen(false)}
+                    title="Register Inbound Shipment"
+                    description="Enter ASN details to schedule a new delivery."
+                    footer={
+                        <>
+                            <Button variant="ghost" onClick={() => setIsCreateModalOpen(false)}>Cancel</Button>
+                            <Button variant="primary" onClick={handleCreateShipment}>Register ASN</Button>
+                        </>
+                    }
+                >
+                    <div className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-zinc-700">ASN Number</label>
+                                <Input
+                                    placeholder="e.g. ASN-2024-001"
+                                    value={createForm.asn_number}
+                                    onChange={(e) => setCreateForm(prev => ({ ...prev, asn_number: e.target.value }))}
+                                    error={createErrors.asn_number}
+                                />
+                                {!createErrors.asn_number && (
+                                    <p className="text-xs text-zinc-500">
+                                        Letters, numbers, and dashes only (auto-converted to uppercase)
+                                    </p>
+                                )}
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-zinc-700">Expected Date</label>
+                                <Input
+                                    type="date"
+                                    value={createForm.expected_date}
+                                    onChange={(e) => setCreateForm(prev => ({ ...prev, expected_date: e.target.value }))}
+                                    error={createErrors.expected_date}
+                                />
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-zinc-700">Supplier Name</label>
+                            <Input
+                                placeholder="Supplier Name"
+                                value={createForm.supplier_name}
+                                onChange={(e) => setCreateForm(prev => ({ ...prev, supplier_name: e.target.value }))}
+                                error={createErrors.supplier_name}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-zinc-700">Carrier (Optional)</label>
+                            <Input
+                                placeholder="e.g. FedEx, UPS"
+                                value={createForm.carrier}
+                                onChange={(e) => setCreateForm(prev => ({ ...prev, carrier: e.target.value }))}
+                            />
+                        </div>
+                    </div>
+                </Modal>
+
+                {/* Manual Receive Modal */}
+                <Modal
+                    isOpen={isManualModalOpen}
+                    onClose={() => setIsManualModalOpen(false)}
+                    title="Manual Reception"
+                    description="Manually enter quantity for a specific SKU."
+                >
+                    <div className="space-y-4">
+                        <div>
+                            <label className="text-xs text-zinc-400 font-medium mb-1.5 block">Product Barcode / SKU</label>
+                            <Input
+                                placeholder="Scan or type barcode..."
+                                value={manualBarcode}
+                                onChange={(e) => setManualBarcode(e.target.value)}
+                                autoFocus
+                            />
+                        </div>
+                        <div>
+                            <label className="text-xs text-zinc-400 font-medium mb-1.5 block">Quantity</label>
+                            <Input
+                                type="number"
+                                placeholder="Qty"
+                                value={manualQty}
+                                onChange={(e) => setManualQty(e.target.value)}
+                            />
+                        </div>
+
+                        {/* Discrepancy / Damage Toggle */}
+                        <div className="pt-2 border-t border-white/5">
+                            <label className="flex items-center gap-2 cursor-pointer mb-3">
+                                <input
+                                    type="checkbox"
+                                    checked={isDamaged}
+                                    onChange={(e) => setIsDamaged(e.target.checked)}
+                                    className="w-4 h-4 rounded border-zinc-600 bg-zinc-800 text-red-500 focus:ring-red-500/50"
+                                />
+                                <span className={cn("text-sm font-medium", isDamaged ? "text-red-400" : "text-zinc-400")}>
+                                    Report as Damaged / Quality Issue
+                                </span>
+                            </label>
+
+                            {isDamaged && (
+                                <div className="animate-in fade-in slide-in-from-top-2">
+                                    <div className="flex items-start gap-2 p-3 bg-red-500/10 border border-red-500/20 rounded-md mb-3">
+                                        <AlertTriangle className="w-4 h-4 text-red-400 mt-0.5" />
+                                        <div className="text-xs text-red-200">
+                                            Items will be flagged and routed to Quarantine for inspection.
+                                        </div>
+                                    </div>
+                                    <label className="text-xs text-zinc-400 font-medium mb-1.5 block">Damage Notes</label>
+                                    <Input
+                                        placeholder="Describe issue (e.g. crushed box)..."
+                                        value={damageNotes}
+                                        onChange={(e) => setDamageNotes(e.target.value)}
+                                    />
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="flex justify-end gap-3 mt-6">
+                            <Button variant="ghost" onClick={() => setIsManualModalOpen(false)}>Cancel</Button>
+                            <Button
+                                variant={isDamaged ? "danger" : "primary"}
+                                onClick={handleManualReceive}
+                            >
+                                {isDamaged ? 'Flag Issue' : 'Confirm Receive'}
+                            </Button>
+                        </div>
+                    </div>
+                </Modal>
             </main>
         </div>
     );

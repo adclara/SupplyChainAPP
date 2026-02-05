@@ -60,7 +60,7 @@ export async function getPackableShipments(warehouseId: string): Promise<Packabl
 
         if (error) throw error;
 
-        return data || [];
+        return (data || []) as PackableShipment[];
     } catch (error) {
         console.error('Failed to fetch packable shipments:', error);
         throw new Error('Failed to fetch packable shipments. Please try again.');
@@ -84,7 +84,7 @@ export async function startPacking(shipmentId: string): Promise<Shipment> {
         if (error) throw error;
         if (!data) throw new Error('Shipment not found');
 
-        return data;
+        return data as Shipment;
     } catch (error) {
         console.error('Failed to start packing:', error);
         throw new Error('Failed to start packing. Please try again.');
@@ -102,8 +102,8 @@ export async function generateLabel(
     carrier: string
 ): Promise<string> {
     try {
-        // In real implementation, this would call carrier API
-        // For now, return mock label URL
+        // TODO: In production, this should call actual carrier API
+        // For now, return placeholder label URL (marked as mock)
         const labelUrl = `https://labels.example.com/${shipmentId}-${carrier}.pdf`;
 
         const { error } = await supabase
@@ -120,5 +120,76 @@ export async function generateLabel(
     } catch (error) {
         console.error('Failed to generate label:', error);
         throw new Error('Failed to generate label. Please try again.');
+    }
+}
+
+// =============================================================================
+// DEEP DIVE: CARTONIZATION & PACKING GUIDES
+// =============================================================================
+
+export interface BoxSize {
+    label: string;
+    length: number;
+    width: number;
+    height: number;
+    max_weight: number;
+}
+
+const PREDEFINED_BOXES: BoxSize[] = [
+    { label: 'SMALL', length: 15, width: 15, height: 10, max_weight: 5 },
+    { label: 'MEDIUM', length: 30, width: 25, height: 20, max_weight: 15 },
+    { label: 'LARGE', length: 50, width: 40, height: 30, max_weight: 30 },
+];
+
+/**
+ * DEEP DIVE: Suggest Optimal Carton
+ * Uses volumetric calculation to recommend the most cost-effective box
+ */
+export async function suggestCarton(shipmentId: string): Promise<BoxSize | null> {
+    try {
+        const { data: lines, error } = await supabase
+            .from('shipment_lines')
+            .select('quantity, product:products(dimensions_cm, weight_kg)')
+            .eq('shipment_id', shipmentId);
+
+        if (error || !lines) throw error;
+
+        // Calculate total volume and weight
+        let totalVolume = 0;
+        let totalWeight = 0;
+
+        lines.forEach((line) => {
+            // Normalize Supabase join - may return object or array
+            const productData = line.product;
+            const product = Array.isArray(productData) ? productData[0] : productData;
+            const dims = product?.dimensions_cm;
+
+            // Handle both naming conventions for dimensions
+            const length = dims?.length ?? dims?.l ?? 5;
+            const width = dims?.width ?? dims?.w ?? 5;
+            const height = dims?.height ?? dims?.h ?? 5;
+
+            const itemVolume = length * width * height;
+            totalVolume += itemVolume * line.quantity;
+            totalWeight += (product?.weight_kg || 0.1) * line.quantity;
+        });
+
+        // Add 20% "Void Fill" buffer (Industry Standard)
+        const requiredVolume = totalVolume * 1.2;
+
+        // Find smallest box that fits volume and weight
+        for (const box of PREDEFINED_BOXES) {
+            const boxVolume = box.length * box.width * box.height;
+            if (boxVolume >= requiredVolume && box.max_weight >= totalWeight) {
+                return box;
+            }
+        }
+
+        // Default to LARGE if no fit (with warning)
+        console.warn(`No suitable box found for shipment ${shipmentId}. Defaulting to LARGE.`);
+        return PREDEFINED_BOXES[2];
+    } catch (error) {
+        console.error('Cartonization error:', error);
+        return null;
     }
 }

@@ -32,7 +32,7 @@ export function Button({
   const baseStyles = cn(
     'inline-flex items-center justify-center gap-2',
     'font-medium rounded-lg transition-all duration-200',
-    'focus:outline-none focus:ring-2 focus:ring-offset-2',
+    'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#0a0a0c]',
     'disabled:opacity-50 disabled:cursor-not-allowed',
     'min-h-[40px]'
   );
@@ -45,11 +45,11 @@ export function Button({
       'shadow-sm hover:shadow-md'
     ),
     secondary: cn(
-      'bg-white text-slate-700',
-      'border border-slate-300',
-      'hover:bg-slate-50 hover:border-slate-400',
-      'active:bg-slate-100',
-      'focus:ring-slate-400'
+      'bg-[#1c1c21] text-zinc-300',
+      'border border-[#27272a]',
+      'hover:bg-white/5 hover:text-white hover:border-zinc-700',
+      'active:bg-white/10',
+      'focus:ring-zinc-800'
     ),
     danger: cn(
       'bg-red-600 text-white',
@@ -64,10 +64,10 @@ export function Button({
       'shadow-sm hover:shadow-md'
     ),
     ghost: cn(
-      'bg-transparent text-slate-600',
-      'hover:bg-slate-100 hover:text-slate-900',
-      'active:bg-slate-200',
-      'focus:ring-slate-400'
+      'bg-transparent text-zinc-400',
+      'hover:bg-white/5 hover:text-white',
+      'active:bg-white/10',
+      'focus:ring-zinc-800'
     ),
     outline: cn(
       'bg-transparent text-blue-600 border-2 border-blue-500',

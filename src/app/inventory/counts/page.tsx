@@ -159,7 +159,7 @@ export default function CountsPage(): React.JSX.Element {
 
                     {/* Stats */}
                     <div className="grid grid-cols-4 gap-4 mb-8">
-                        <Card variant="glass">
+                        <Card variant="elevated">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
                                     <ClipboardCheck className="w-5 h-5 text-blue-400" />
@@ -171,7 +171,7 @@ export default function CountsPage(): React.JSX.Element {
                             </div>
                         </Card>
 
-                        <Card variant="glass">
+                        <Card variant="elevated">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center">
                                     <CheckCircle className="w-5 h-5 text-emerald-400" />
@@ -183,7 +183,7 @@ export default function CountsPage(): React.JSX.Element {
                             </div>
                         </Card>
 
-                        <Card variant="glass">
+                        <Card variant="elevated">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center">
                                     <AlertTriangle className="w-5 h-5 text-red-400" />
@@ -195,7 +195,7 @@ export default function CountsPage(): React.JSX.Element {
                             </div>
                         </Card>
 
-                        <Card variant="glass">
+                        <Card variant="elevated">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
                                     <TrendingUp className="w-5 h-5 text-purple-400" />

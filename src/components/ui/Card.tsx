@@ -28,24 +28,24 @@ export function Card({
   className,
   ...props
 }: CardProps): React.JSX.Element {
-  const baseStyles = 'rounded-xl border bg-white transition-all duration-200';
+  const baseStyles = 'rounded-xl border bg-[#141417] transition-all duration-200';
 
   const variantStyles = {
     default: cn(
-      'border-slate-200 shadow-sm',
-      hoverable && 'hover:shadow-md hover:border-slate-300'
+      'border-[#27272a] shadow-sm',
+      hoverable && 'hover:shadow-md hover:border-zinc-700'
     ),
     elevated: cn(
-      'border-slate-200 shadow-md',
-      hoverable && 'hover:shadow-lg hover:border-slate-300'
+      'border-[#27272a] shadow-lg',
+      hoverable && 'hover:shadow-xl hover:border-zinc-700'
     ),
     flat: cn(
-      'border-slate-200 shadow-none',
-      hoverable && 'hover:border-slate-300 bg-slate-50/50'
+      'border-[#27272a] shadow-none',
+      hoverable && 'hover:border-zinc-700 bg-white/5'
     ),
     interactive: cn(
-      'border-slate-200 shadow-sm cursor-pointer',
-      'hover:shadow-md hover:border-blue-300 hover:ring-1 hover:ring-blue-200',
+      'border-[#27272a] shadow-sm cursor-pointer',
+      'hover:shadow-md hover:border-blue-500 hover:ring-1 hover:ring-blue-500/20',
       'active:scale-[0.995]'
     ),
   };
@@ -73,6 +73,8 @@ export interface CardHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
   title?: string;
   /** Subtitle text */
   subtitle?: string;
+  /** Icon to display before the title */
+  icon?: React.ReactNode;
   /** Action element (button, icon, etc.) */
   action?: React.ReactNode;
 }
@@ -80,6 +82,7 @@ export interface CardHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
 export function CardHeader({
   title,
   subtitle,
+  icon,
   action,
   children,
   className,
@@ -90,16 +93,23 @@ export function CardHeader({
       className={cn('flex items-start justify-between gap-4', className)}
       {...props}
     >
-      <div className="flex-1 min-w-0">
-        {title && (
-          <h3 className="text-base font-semibold text-slate-900 truncate">
-            {title}
-          </h3>
+      <div className="flex items-start gap-3 flex-1 min-w-0">
+        {icon && (
+          <div className="flex-shrink-0 text-zinc-400">
+            {icon}
+          </div>
         )}
-        {subtitle && (
-          <p className="text-sm text-slate-500 mt-0.5">{subtitle}</p>
-        )}
-        {children}
+        <div className="flex-1 min-w-0">
+          {title && (
+            <h3 className="text-base font-semibold text-white truncate">
+              {title}
+            </h3>
+          )}
+          {subtitle && (
+            <p className="text-sm text-zinc-400 mt-0.5">{subtitle}</p>
+          )}
+          {children}
+        </div>
       </div>
       {action && <div className="flex-shrink-0">{action}</div>}
     </div>
@@ -132,7 +142,7 @@ export function CardFooter({
   return (
     <div
       className={cn(
-        'mt-4 pt-4 border-t border-slate-100 flex items-center gap-3',
+        'mt-4 pt-4 border-t border-[#27272a] flex items-center gap-3',
         className
       )}
       {...props}

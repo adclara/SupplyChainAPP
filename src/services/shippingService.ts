@@ -57,7 +57,7 @@ export async function getPackedShipmentsByWave(waveId: string) {
       shipment_lines (
         id,
         quantity,
-        product:product_id (
+        product:products (
           id,
           name,
           sku,

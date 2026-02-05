@@ -1,36 +1,232 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Nexus WMS - Warehouse Management System
+
+A modern, full-featured Warehouse Management System built with Next.js 15, TypeScript, and Supabase.
+
+![Next.js](https://img.shields.io/badge/Next.js-15-black?style=flat-square&logo=next.js)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=flat-square&logo=typescript)
+![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-green?style=flat-square&logo=supabase)
+![License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)
+
+## Features
+
+### Inbound Operations
+- **Receiving** - Process incoming shipments with ASN support
+- **Dock Management** - Assign and manage dock doors
+- **Putaway** - Directed putaway with location suggestions
+- **Replenishment** - Automated stock replenishment workflows
+
+### Outbound Operations
+- **Wave Planning** - Batch orders into optimized picking waves
+- **Picking** - Mobile-friendly pick tasks with barcode scanning
+- **Packing** - Cartonization and pack station management
+- **Shipping** - Carrier integration and label generation
+
+### Inventory Management
+- **Real-time Tracking** - Live inventory levels across all locations
+- **Stock Movements** - Add, move, adjust inventory with full audit trail
+- **Transaction History** - Complete history of all inventory movements
+- **Location Management** - Rack, floor, staging, and dock locations
+
+### ICQA (Inventory Control & Quality Assurance)
+- **Cycle Counts** - Scheduled and ad-hoc inventory counts
+- **Problem Tickets** - Track and resolve inventory discrepancies
+- **Adjustments** - Controlled inventory adjustments with approvals
+
+### Dashboard & Analytics
+- **Real-time KPIs** - Inbound, outbound, and inventory metrics
+- **Activity Feed** - Live transaction monitoring
+- **Alerts** - Low stock, overdue shipments, problem tickets
+
+## Tech Stack
+
+- **Framework**: Next.js 15 with App Router & Turbopack
+- **Language**: TypeScript (strict mode)
+- **Database**: Supabase (PostgreSQL)
+- **State Management**: Zustand
+- **Validation**: Zod v4
+- **Testing**: Vitest + React Testing Library
+- **Styling**: Tailwind CSS
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 18+
+- npm or yarn
+- Supabase account
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/adclara/SupplyChainAPP.git
+   cd nexus-wms
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Configure environment variables**
+
+   Create a `.env.local` file:
+   ```env
+   NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+   ```
+
+4. **Set up the database**
+
+   Run the schema in Supabase SQL Editor:
+   ```bash
+   # The schema file is located at:
+   supabase/schema.sql
+   ```
+
+5. **Run the development server**
+   ```bash
+   npm run dev
+   ```
+
+6. **Open the application**
+
+   Navigate to [http://localhost:3000](http://localhost:3000)
+
+### Testing
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Run all tests
+npm test
+
+# Run tests with UI
+npm run test:ui
+
+# Run tests with coverage
+npm run test:coverage
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Test Supabase Connection
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+# Verify database connectivity
+npm run test:connection
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Project Structure
 
-## Learn More
+```
+nexus-wms/
+├── src/
+│   ├── app/                    # Next.js App Router pages
+│   │   ├── admin/              # Admin settings
+│   │   ├── dashboard/          # Main dashboard
+│   │   ├── inbound/            # Receiving, putaway, dock, replenishment
+│   │   ├── inventory/          # Stock management, history, counts
+│   │   ├── outbound/           # Picking, packing, shipping
+│   │   └── api/                # API routes
+│   ├── components/
+│   │   ├── inventory/          # Inventory-specific components
+│   │   ├── layout/             # Sidebar, navigation
+│   │   └── ui/                 # Reusable UI components
+│   ├── lib/
+│   │   ├── errors.ts           # Error handling utilities
+│   │   ├── supabase.ts         # Supabase client
+│   │   └── validations/        # Zod schemas
+│   ├── services/               # Business logic & API calls
+│   ├── store/                  # Zustand stores
+│   ├── tests/                  # Test files
+│   └── types/                  # TypeScript definitions
+├── supabase/
+│   └── schema.sql              # Database schema
+├── scripts/
+│   └── test-supabase-connection.ts
+└── database/
+    └── seed.sql                # Sample data
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Database Schema
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+The application uses 16 core tables:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Table | Description |
+|-------|-------------|
+| `users` | User accounts and roles |
+| `warehouses` | Warehouse locations |
+| `products` | Product catalog |
+| `categories` | Product categories |
+| `locations` | Storage locations (rack, floor, dock, etc.) |
+| `inventory` | Current stock levels |
+| `transactions` | All inventory movements |
+| `inbound_shipments` | Incoming shipment headers |
+| `inbound_lines` | Incoming shipment line items |
+| `putaway_tasks` | Putaway work queue |
+| `waves` | Outbound wave headers |
+| `shipments` | Outbound order headers |
+| `shipment_lines` | Outbound order line items |
+| `shipment_hand_off_log` | Carrier handoff tracking |
+| `count_tasks` | Cycle count tasks |
+| `problem_tickets` | Issue tracking |
 
-## Deploy on Vercel
+## Security Features
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **Authentication Middleware** - Server-side route protection
+- **Row Level Security (RLS)** - Database-level access control
+- **Security Headers** - X-Frame-Options, CSP, HSTS
+- **Environment Validation** - Fail-fast in production
+- **Input Validation** - Zod schemas for all inputs
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/outbound/shipping/verify` | POST | Verify shipment for shipping |
+| `/api/outbound/shipping/confirm` | POST | Confirm carrier handoff |
+
+## Recent Updates (v2.0)
+
+### Architecture Improvements
+- Added authentication middleware for all protected routes
+- Implemented comprehensive security headers
+- Added fail-fast environment validation
+
+### Type Safety
+- Eliminated 35+ `any` types with proper TypeScript definitions
+- Added database types for all Supabase queries
+- Created RPC result types for stored procedures
+
+### Error Handling
+- Transaction logging now returns success/error status
+- Dashboard uses Promise.allSettled for resilient data loading
+- Standardized error classes (AppError, ValidationError, NotFoundError)
+
+### Code Quality
+- Removed mock data from production code
+- Dynamic dock doors from database (was hardcoded)
+- Added comprehensive test infrastructure
+
+### New Features
+- Inventory management page with stock movements
+- Transaction history with filtering
+- Admin settings panel
+- Hardware configuration store
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- [Next.js](https://nextjs.org/) - React framework
+- [Supabase](https://supabase.com/) - Backend as a Service
+- [Tailwind CSS](https://tailwindcss.com/) - Styling
+- [Zustand](https://github.com/pmndrs/zustand) - State management
+- [Zod](https://zod.dev/) - Schema validation

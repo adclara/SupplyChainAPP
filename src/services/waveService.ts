@@ -4,6 +4,10 @@
  */
 
 import { supabase } from '@/lib/supabase';
+import {
+    EligibleShipmentRow,
+    WaveWithShipmentsRow,
+} from '@/types/database';
 
 // =============================================================================
 // TYPES
@@ -22,6 +26,16 @@ export interface Wave {
 export interface CreateWaveInput {
     warehouse_id: string;
     shipment_ids?: string[];
+    prioritization?: 'sla' | 'density' | 'carrier';
+}
+
+export interface InventoryCheckResult {
+    can_fulfill: boolean;
+    shortages: Array<{
+        product_id: string;
+        sku: string;
+        missing_qty: number;
+    }>;
 }
 
 // =============================================================================
@@ -52,8 +66,13 @@ export async function createWave(input: CreateWaveInput): Promise<Wave> {
 
         if (error) throw error;
 
-        // If shipment IDs provided, assign them to the wave
         if (input.shipment_ids && input.shipment_ids.length > 0) {
+            // DEEP DIVE: Perform hard allocation check before committing
+            const commitment = await preCheckInventoryCommitment(input.shipment_ids);
+            if (!commitment.can_fulfill) {
+                throw new Error(`Inventory Shortage: Cannot release wave. Missing ${commitment.shortages.length} SKUs.`);
+            }
+
             const { error: assignError } = await supabase
                 .from('shipments')
                 .update({ wave_id: data.id })
@@ -65,8 +84,86 @@ export async function createWave(input: CreateWaveInput): Promise<Wave> {
         return data;
     } catch (error) {
         console.error('Failed to create wave:', error);
-        throw new Error('Failed to create wave. Please try again.');
+        throw new Error(error instanceof Error ? error.message : 'Failed to create wave');
     }
+}
+
+/**
+ * DEEP DIVE: Waterfall Prioritization Logic
+ * Groups shipments by SLA, then SKU Coincidence (density)
+ */
+export async function getEligibleShipments(warehouseId: string, limit = 50): Promise<EligibleShipmentRow[]> {
+    const { data, error } = await supabase
+        .from('shipments')
+        .select(`
+            id,
+            order_number,
+            customer_name,
+            created_at,
+            shipment_lines (product_id, quantity)
+        `)
+        .eq('warehouse_id', warehouseId)
+        .is('wave_id', null)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: true }) // Default SLA (Oldest first)
+        .limit(limit);
+
+    if (error) throw error;
+    return (data || []) as EligibleShipmentRow[];
+}
+
+/**
+ * DEEP DIVE: Inventory Commitment Pre-check
+ * Ensures picking doesn't fail on the floor due to phantom inventory
+ */
+export async function preCheckInventoryCommitment(shipmentIds: string[]): Promise<InventoryCheckResult> {
+    // 1. Get required quantities
+    const { data: lines, error: linesError } = await supabase
+        .from('shipment_lines')
+        .select('product_id, quantity, product:products(sku)')
+        .in('shipment_id', shipmentIds);
+
+    if (linesError) throw linesError;
+
+    const rawLines = lines || [];
+
+    const requirements: Record<string, { qty: number; sku: string }> = {};
+    rawLines.forEach((line) => {
+        // Normalize Supabase join - may return object or array
+        const productData = line.product;
+        const product = Array.isArray(productData) ? productData[0] : productData;
+        const sku = product?.sku || 'UNKNOWN';
+        if (!requirements[line.product_id]) {
+            requirements[line.product_id] = { qty: 0, sku };
+        }
+        requirements[line.product_id].qty += line.quantity;
+    });
+
+    // 2. Cross-check with available inventory
+    const shortages: InventoryCheckResult['shortages'] = [];
+
+    for (const [productId, req] of Object.entries(requirements)) {
+        const { data: inv, error: invError } = await supabase
+            .from('inventory')
+            .select('quantity')
+            .eq('product_id', productId);
+
+        if (invError) throw invError;
+        const totalAvail = inv?.reduce((sum, item) => sum + item.quantity, 0) || 0;
+
+        if (totalAvail < req.qty) {
+            shortages.push({
+                product_id: productId,
+                sku: req.sku,
+                missing_qty: req.qty - totalAvail
+            });
+        }
+    }
+
+    return {
+        can_fulfill: shortages.length === 0,
+        shortages
+    };
 }
 
 /**
@@ -123,7 +220,7 @@ export async function getWaves(
 
         if (error) throw error;
 
-        return data || [];
+        return (data || []) as Wave[];
     } catch (error) {
         console.error('Failed to fetch waves:', error);
         throw new Error('Failed to fetch waves. Please try again.');
@@ -135,7 +232,7 @@ export async function getWaves(
  * @param waveId - Wave ID
  * @returns Wave with shipments
  */
-export async function getWaveWithShipments(waveId: string): Promise<any> {
+export async function getWaveWithShipments(waveId: string): Promise<WaveWithShipmentsRow | null> {
     try {
         const { data, error } = await supabase
             .from('waves')
@@ -159,7 +256,7 @@ export async function getWaveWithShipments(waveId: string): Promise<any> {
 
         if (error) throw error;
 
-        return data;
+        return data as WaveWithShipmentsRow;
     } catch (error) {
         console.error('Failed to fetch wave:', error);
         throw new Error('Failed to fetch wave. Please try again.');

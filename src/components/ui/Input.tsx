@@ -42,7 +42,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           <label
             htmlFor={inputId}
             className={cn(
-              'text-sm font-medium text-slate-700',
+              'text-sm font-medium text-zinc-400',
               disabled && 'opacity-50'
             )}
           >
@@ -52,7 +52,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
 
         <div className="relative">
           {leftIcon && (
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500">
               {leftIcon}
             </div>
           )}
@@ -62,16 +62,16 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             id={inputId}
             disabled={disabled}
             className={cn(
-              'w-full rounded-lg bg-white text-slate-900',
-              'border border-slate-300 focus:border-blue-500',
-              'placeholder:text-slate-400',
+              'w-full rounded-lg bg-[#0a0a0c] text-white',
+              'border border-[#27272a] focus:border-blue-500',
+              'placeholder:text-zinc-600',
               'transition-all duration-200',
               'focus:outline-none focus:ring-2 focus:ring-blue-500/20',
-              'disabled:bg-slate-100 disabled:cursor-not-allowed',
+              'disabled:bg-zinc-900 disabled:cursor-not-allowed',
               'h-11 px-4 py-2.5 text-sm',
               leftIcon && 'pl-10',
               rightIcon && 'pr-10',
-              error && 'border-red-500 focus:border-red-500 focus:ring-red-500/20',
+              error && 'border-red-500/50 focus:border-red-500 focus:ring-red-500/10',
               className
             )}
             aria-invalid={!!error}
@@ -82,7 +82,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           />
 
           {rightIcon && (
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500">
               {rightIcon}
             </div>
           )}
